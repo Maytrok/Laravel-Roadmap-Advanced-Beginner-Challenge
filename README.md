@@ -1,3 +1,19 @@
+# Laravel Sail info
+
+This Project is using Laravel Sail.
+
+```
+./vendor/bin/sail up -d
+```
+For more info visit
+
+[Laravel 8.x getting started](https://laravel.com/docs/8.x/installation#your-first-laravel-project)
+
+
+
+---
+
+
 # Laravel Roadmap: Advanced Beginner Level Challenge
 
 This is a task for the [Advanced Beginner Level of the Laravel Roadmap](https://github.com/LaravelDaily/Laravel-Roadmap-Learning-Path#advanced-beginner-level), with the goal to implement as many of its topics as possible.
