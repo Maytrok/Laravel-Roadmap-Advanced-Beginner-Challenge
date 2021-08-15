@@ -21,9 +21,6 @@ services:
             - sail
         depends_on:
             - mysql
-            - redis
-            - meilisearch
-            - selenium
     mysql:
         image: 'mysql:8.0'
         ports:
@@ -35,35 +32,29 @@ services:
             MYSQL_PASSWORD: '${DB_PASSWORD}'
             MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
         volumes:
-            - 'sailmysql:/var/lib/mysql'
+            - 'mysql_ABC:/var/lib/mysql'
         networks:
             - sail
         healthcheck:
           test: ["CMD", "mysqladmin", "ping", "-p${DB_PASSWORD}"]
           retries: 3
           timeout: 5s
-    redis:
-        image: 'redis:alpine'
+    mysql.test:
+        image: 'mysql:8.0'
         ports:
-            - '${FORWARD_REDIS_PORT:-6379}:6379'
+            - '3333'
+        environment:
+            MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
+            MYSQL_DATABASE: '${DB_DATABASE}'
+            MYSQL_USER: '${DB_USERNAME}'
+            MYSQL_PASSWORD: '${DB_PASSWORD}'
+            MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
         volumes:
-            - 'sailredis:/data'
+            - 'mysql_ABC_test:/var/lib/mysql'
         networks:
             - sail
         healthcheck:
-          test: ["CMD", "redis-cli", "ping"]
-          retries: 3
-          timeout: 5s
-    meilisearch:
-        image: 'getmeili/meilisearch:latest'
-        ports:
-            - '${FORWARD_MEILISEARCH_PORT:-7700}:7700'
-        volumes:
-            - 'sailmeilisearch:/data.ms'
-        networks:
-            - sail
-        healthcheck:
-          test: ["CMD", "wget", "--no-verbose", "--spider",  "http://localhost:7700/health"]
+          test: ["CMD", "mysqladmin", "ping", "-p${DB_PASSWORD}"]
           retries: 3
           timeout: 5s
     mailhog:
@@ -73,19 +64,11 @@ services:
             - '${FORWARD_MAILHOG_DASHBOARD_PORT:-8025}:8025'
         networks:
             - sail
-    selenium:
-       image: 'selenium/standalone-chrome'
-       volumes:
-            - '/dev/shm:/dev/shm'
-       networks:
-           - sail
 networks:
     sail:
         driver: bridge
 volumes:
-    sailmysql:
+    mysql_ABC:
         driver: local
-    sailredis:
-        driver: local
-    sailmeilisearch:
+    mysql_ABC_test:
         driver: local
