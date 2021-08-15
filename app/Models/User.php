@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Exceptions\AdminUserCantBeDeletedException;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -41,4 +42,10 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function delete()
+    {
+        throw_if($this->id == 1, AdminUserCantBeDeletedException::class);
+        parent::delete();
+    }
 }
