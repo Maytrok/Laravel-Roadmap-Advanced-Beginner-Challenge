@@ -1,8 +1,11 @@
 <?php
 
+use App\Models\User;
+use App\System\Roles;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Spatie\Permission\Models\Role;
 
 class CreatePermissionTables extends Migration
 {
@@ -94,6 +97,10 @@ class CreatePermissionTables extends Migration
         app('cache')
             ->store(config('permission.cache.store') != 'default' ? config('permission.cache.store') : null)
             ->forget(config('permission.cache.key'));
+
+        $role = Role::create(['name' => Roles::SUPER_ADMIN]);
+        $admin = User::find(1);
+        $admin->assignRole($role);
     }
 
     /**
