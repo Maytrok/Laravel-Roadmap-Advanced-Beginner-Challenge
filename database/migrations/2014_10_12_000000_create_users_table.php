@@ -23,6 +23,11 @@ class CreateUsersTable extends Migration
             $table->softDeletes();
             $table->timestamps();
         });
+
+        \App\Models\User::factory()->create([
+            'name' => "admin",
+            'email' => "admin@admin.com",
+        ]);
     }
 
     /**
