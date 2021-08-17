@@ -25,4 +25,19 @@ class BaseApiRequest extends FormRequest
     {
         throw (new ValidationException($validator));
     }
+
+    protected function getPatchRulesFromCreateRequest(BaseApiRequest $request)
+    {
+        $rules = collect($request->rules());
+
+        $rules = $rules->map(function ($item) {
+
+            $r = [];
+            foreach ($item as $value) {
+                $r[] = $value == "required" ? "sometimes" : $value;
+            }
+            return $r;
+        });
+        return $rules->toArray();
+    }
 }
