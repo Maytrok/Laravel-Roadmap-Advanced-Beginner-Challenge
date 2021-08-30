@@ -114,7 +114,6 @@ export default {
           user = await this.updateUser();
         }
 
-        console.log("user", user);
         if (user === null) throw new Error("Sometink went wrong");
 
         this.$emit("newItem", user);
