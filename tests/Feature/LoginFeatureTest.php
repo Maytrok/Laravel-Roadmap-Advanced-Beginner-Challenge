@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use DB;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Response;
 use Laravel\Sanctum\Sanctum;
@@ -11,9 +12,6 @@ use Tests\TestCase;
 class LoginFeatureTest extends TestCase
 {
 
-    use RefreshDatabase;
-
-    private $seed = true;
     /**
      * @test
      */
@@ -56,6 +54,7 @@ class LoginFeatureTest extends TestCase
      */
     public function email_address_can_use_to_login()
     {
+        DB::table("personal_access_tokens")->truncate();
         $response = $this->post('/api/login', [
             "username" => "admin@admin.com",
             "password" => "password"
@@ -94,6 +93,7 @@ class LoginFeatureTest extends TestCase
      */
     public function logout_removes_all_tokens()
     {
+        DB::table("personal_access_tokens")->truncate();
         $user = User::find(1);
         $user->createToken("myFirst");
         $token = $user->createToken("justAnOtherOne")->plainTextToken;

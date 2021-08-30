@@ -2,21 +2,17 @@
 
 namespace Tests\Feature;
 
+use App\Models\Client;
 use App\Models\Project;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Response;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
-use URL;
 
 class ProjectFeatureTest extends TestCase
 {
 
-    use RefreshDatabase;
-
-    protected $seed = true;
 
     public function setUp(): void
     {
@@ -31,7 +27,8 @@ class ProjectFeatureTest extends TestCase
     {
 
 
-        $response = $this->get("api/projects/10");
+        $project = Project::factory()->create();
+        $response = $this->get("api/projects/" . $project->id);
         $response->assertOk();
         $response->assertJson(
             fn (AssertableJson $json) =>
@@ -45,16 +42,17 @@ class ProjectFeatureTest extends TestCase
      */
     public function a_project_can_be_created()
     {
-
-        $this->assertEquals(40, Project::count());
+        Project::factory()->count(5)->create();
+        $client = Client::factory()->create();
+        $this->assertEquals(5, Project::count());
         $response = $this->post("api/projects", [
             "name" => "Test Project",
             "user_id" => 1,
-            "client_id" => 1,
+            "client_id" => $client->id,
             "deadline" => now()->addMonth()
         ]);
         $response->assertCreated();
-        $this->assertEquals(41, Project::count());
+        $this->assertEquals(6, Project::count());
     }
 
 
@@ -65,7 +63,8 @@ class ProjectFeatureTest extends TestCase
     public function a_project_cant_be_created_if_the_client_id_doesnt_exists()
     {
 
-        $this->assertEquals(40, Project::count());
+        Project::factory()->count(5)->create();
+        $this->assertEquals(5, Project::count());
         $response = $this->post("api/projects", [
             "name" => "Test Project",
             "user_id" => 1,
@@ -85,7 +84,8 @@ class ProjectFeatureTest extends TestCase
      */
     public function a_project_can_be_updated()
     {
-        $response = $this->patch("api/projects/1", ["status" => "clarification", "name" => "Just testing"]);
+        $project = Project::factory()->create();
+        $response = $this->patch("api/projects/" . $project->id, ["status" => "clarification", "name" => "Just testing"]);
         $response->assertOk();
         $response->assertJson(
             fn (AssertableJson $json) =>
@@ -101,14 +101,15 @@ class ProjectFeatureTest extends TestCase
      */
     public function only_admins_can_delete_a_project()
     {
-        $response = $this->delete("api/projects/1");
+        $project = Project::factory()->create();
+        $response = $this->delete("api/projects/" . $project->id);
         $response->assertStatus(Response::HTTP_FORBIDDEN);
-        $this->assertEquals(40, Project::count());
+        $this->assertEquals(1, Project::count());
 
         Sanctum::actingAs(User::find(1));
 
-        $response = $this->delete("api/projects/1");
+        $response = $this->delete("api/projects/" . $project->id);
         $response->assertStatus(Response::HTTP_NO_CONTENT);
-        $this->assertEquals(39, Project::count());
+        $this->assertEquals(0, Project::count());
     }
 }

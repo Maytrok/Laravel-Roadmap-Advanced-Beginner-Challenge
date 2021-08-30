@@ -4,7 +4,9 @@ namespace Tests\Feature;
 
 use App\Models\Client;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Database\Seeders\ClientSeeder;
+use Database\Seeders\UserSeeder;
+use Illuminate\Database\Seeder;
 use Illuminate\Http\Response;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Laravel\Sanctum\Sanctum;
@@ -13,7 +15,6 @@ use Tests\TestCase;
 class ClientFeatureTest extends TestCase
 {
 
-    use RefreshDatabase;
 
     private $exampleData = [
         "matchcode" => "my Name",
@@ -38,14 +39,13 @@ class ClientFeatureTest extends TestCase
         "created_at",
     ];
 
-
-    protected $seed = true;
     /**
      * @test
      */
     public function clients_can_listed()
     {
         Sanctum::actingAs(User::find(2));
+        $this->seed(ClientSeeder::class);
         $response = $this->get('api/clients/');
 
         $response->assertStatus(200);
@@ -67,8 +67,9 @@ class ClientFeatureTest extends TestCase
      */
     public function a_client_can_shown()
     {
-        Sanctum::actingAs(User::find(2));
-        $response = $this->get('api/clients/2');
+        $client = Client::factory()->create();
+        Sanctum::actingAs(User::factory()->create());
+        $response = $this->get('api/clients/' . $client->id);
         $response->assertOk();
 
         $response->assertJson(fn (AssertableJson $json) =>
@@ -114,7 +115,8 @@ class ClientFeatureTest extends TestCase
     public function clients_can_be_updated()
     {
         Sanctum::actingAs(User::find(2));
-        $response = $this->patch('api/clients/2', ["name" => "superName"]);
+        $client = Client::factory()->create();
+        $response = $this->patch('api/clients/' . $client->id, ["name" => "superName"]);
         $response->assertOk();
         $response->assertJson(
             fn (AssertableJson $json) =>
@@ -129,6 +131,7 @@ class ClientFeatureTest extends TestCase
      */
     public function clients_can_be_soft_deleted()
     {
+        $this->seed(ClientSeeder::class);
         Sanctum::actingAs(User::find(2));
         $this->assertCount(20, Client::all());
         $response = $this->delete('api/clients/2');

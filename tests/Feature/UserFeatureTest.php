@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Http\Response;
 use Illuminate\Testing\Fluent\AssertableJson;
@@ -13,12 +12,11 @@ use Tests\TestCase;
 class UserFeatureTest extends TestCase
 {
 
-    use RefreshDatabase;
-
-    protected $seed = true;
+    use WithFaker;
 
     private $rolesAndPermission = ["roles", "permissions"];
     private $jsonAdminUserCanSee = ["id", "name", "email", "created_at", "deleted_at", "roles", "permissions"];
+
 
     /**
      * @test
@@ -36,9 +34,9 @@ class UserFeatureTest extends TestCase
     public function a_user_can_be_shown()
     {
 
-        Sanctum::actingAs(User::find(1));
-
-        $response = $this->get("/api/users/1");
+        Sanctum::actingAs(User::factory()->create());
+        $user = User::factory()->create();
+        $response = $this->get("/api/users/" . $user->id);
         $response->assertOk();
     }
 
@@ -49,7 +47,9 @@ class UserFeatureTest extends TestCase
     {
         Sanctum::actingAs(User::find(1));
 
-        $response = $this->get("/api/users/2");
+        $user = User::factory()->create();
+        $user = User::factory()->create();
+        $response = $this->get("/api/users/" . $user->id);
         $response->assertOk();
         $response->assertJson(
             fn (AssertableJson $json) =>
@@ -57,7 +57,7 @@ class UserFeatureTest extends TestCase
                 ->etc()
         );
 
-        Sanctum::actingAs(User::find(2));
+        Sanctum::actingAs($user);
 
         $response = $this->get("/api/users/1");
         $response->assertOk();
@@ -67,7 +67,7 @@ class UserFeatureTest extends TestCase
                 ->etc()
         );
 
-        $response = $this->get("/api/users/2");
+        $response = $this->get("/api/users/" . $user->id);
         $response->assertOk();
         $response->assertJson(
             fn (AssertableJson $json) =>
@@ -81,18 +81,19 @@ class UserFeatureTest extends TestCase
      */
     public function user_index_method()
     {
-        Sanctum::actingAs(User::find(2));
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
 
         $response = $this->get("api/users");
-
+        $count = User::count();
         $response->assertOk();
         $response->assertJson(
             fn (AssertableJson $json) =>
-            $json->has(11)
+            $json->has($count)
                 ->first(
                     fn (AssertableJson $j) => $j->hasAll(["id", "name", "email", "created_at"]),
                 )
-                ->has(1, fn (AssertableJson $j) => $j->hasAll($this->rolesAndPermission)->etc())
+                ->has(2, fn (AssertableJson $j) => $j->hasAll($this->rolesAndPermission)->etc())
                 ->etc()
         );
     }
@@ -126,7 +127,7 @@ class UserFeatureTest extends TestCase
             "email" => "42@answers.com",
             "password" => "sup3rG3h3!m"
         ];
-        Sanctum::actingAs(User::find(2));
+        Sanctum::actingAs(User::factory()->create());
         $response = $this->post("api/users", $data);
         $response->assertStatus(Response::HTTP_FORBIDDEN);
 
@@ -147,15 +148,18 @@ class UserFeatureTest extends TestCase
     {
 
         $data = [
-            "email" => "example@admin.com"
+            "email" => $this->faker->freeEmail
         ];
 
-        Sanctum::actingAs(User::find(2));
-        $response = $this->patch("api/users/9", $data);
+        $user = User::factory()->create();
+
+
+        Sanctum::actingAs(User::factory()->create());
+        $response = $this->patch("api/users/" . $user->id, $data);
         $response->assertStatus(Response::HTTP_FORBIDDEN);
 
-
-        $response = $this->patch("api/users/2", ["email" => "me@aol.com"]);
+        Sanctum::actingAs($user);
+        $response = $this->patch("api/users/" . $user->id, ["email" => "me@aol.com"]);
         $response->assertOk();
         $response->assertJson(
             fn (AssertableJson $json) =>
@@ -163,7 +167,7 @@ class UserFeatureTest extends TestCase
         );
 
         Sanctum::actingAs(User::find(1));
-        $response = $this->patch("api/users/9", $data);
+        $response = $this->patch("api/users/" . $user->id, $data);
         $response->assertOk();
         $response->assertJson(
             fn (AssertableJson $json) =>
@@ -177,13 +181,16 @@ class UserFeatureTest extends TestCase
      */
     public function only_admin_can_delete_users()
     {
-        Sanctum::actingAs(User::find(2));
-        $response = $this->delete("api/users/2");
+
+        $user = User::factory()->create();
+        Sanctum::actingAs(User::factory()->create());
+        $count = User::count();
+        $response = $this->delete("api/users/" . $user->id);
         $response->assertStatus(Response::HTTP_FORBIDDEN);
 
         Sanctum::actingAs(User::find(1));
-        $response = $this->delete("api/users/2");
+        $response = $this->delete("api/users/" . $user->id);
         $response->assertStatus(Response::HTTP_NO_CONTENT);
-        $this->assertCount(10, User::all());
+        $this->assertCount(--$count, User::all());
     }
 }
