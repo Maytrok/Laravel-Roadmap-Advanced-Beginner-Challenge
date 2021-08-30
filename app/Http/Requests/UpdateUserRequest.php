@@ -9,6 +9,7 @@ class UpdateUserRequest extends BaseApiRequest
         return [
             "name" => "sometimes",
             "email" => "sometimes",
+            "password" => "sometimes",
         ];
     }
 }
