@@ -6,30 +6,28 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Project extends Model
+class Task extends Model
 {
     use HasFactory, SoftDeletes;
 
-    const STATUS = ["open", "clarification", "in progress", "finished"];
-
     protected $guarded = [];
 
-    protected $hidden = [
-        "deleted_at",
+    protected $casts = [
+        "completed" => "bool",
     ];
+
+    protected $hidden = [
+        "deleted_at"
+    ];
+
 
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function client()
+    public function project()
     {
-        return $this->belongsTo(Client::class);
-    }
-
-    public function tasks()
-    {
-        return $this->hasMany(Task::class);
+        return $this->belongsTo(Project::class);
     }
 }
