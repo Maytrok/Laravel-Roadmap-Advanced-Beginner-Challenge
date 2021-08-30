@@ -12,7 +12,7 @@ Route::post("login", [LoginController::class, "login"]);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get("logout", [LoginController::class, "logout"]);
-
+    Route::get("/users/checkAuth", [LoginController::class, "checkAuth"]);
     Route::apiResource("users", UserController::class);
     Route::apiResource("clients", ClientController::class);
     Route::get("projects/{project}/tasks", [TaskController::class, "projectTasks"]);

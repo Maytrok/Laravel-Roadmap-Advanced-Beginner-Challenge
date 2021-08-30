@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\LoginException;
 use App\Http\Requests\LoginRequest;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -21,6 +22,11 @@ class LoginController extends Controller
         }
 
         return $user->createToken($user->name)->plainTextToken;
+    }
+
+    public function checkAuth()
+    {
+        return new UserResource(auth()->user());
     }
 
     public function logout(Request $request)
