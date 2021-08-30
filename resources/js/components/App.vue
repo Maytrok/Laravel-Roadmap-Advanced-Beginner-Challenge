@@ -2,12 +2,11 @@
   <!-- App.vue -->
 
   <v-app>
-    <v-navigation-drawer app>
-      <!-- -->
-    </v-navigation-drawer>
-
-    <v-app-bar app>
-      <!-- -->
+    <navigation v-model="drawer"></navigation>
+    <v-app-bar app height="60">
+      <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
+      <v-spacer></v-spacer>
+      <v-btn icon> <v-icon>mdi-account-outline</v-icon></v-btn>
     </v-app-bar>
 
     <!-- Sizes your content based upon application components -->
@@ -29,6 +28,11 @@ import Navigation from "./Navigation.vue";
 export default {
   components: {
     Navigation,
+  },
+  data() {
+    return {
+      drawer: true,
+    };
   },
 };
 </script>
