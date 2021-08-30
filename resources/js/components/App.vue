@@ -37,12 +37,21 @@ export default {
     };
   },
   computed: {
-    ...mapState(["sessionToken"]),
+    ...mapState(["user", "sessionToken"]),
   },
   async beforeMount() {
     await this.initStore();
-    if (this.sessionToken === null && this.$route.name != "login") {
+    if (this.user === null && this.$route.name != "login") {
       this.$router.replace("/login");
+      if (this.sessionToken !== null) {
+        this.$swal({
+          text: "Session is expired",
+          position: "top-end",
+          icon: "info",
+          toast: true,
+          timer: 2000,
+        });
+      }
     }
   },
   methods: {

@@ -50,9 +50,23 @@ export default {
         try {
           this.loading = true;
           await this.login({ username: this.name, password: this.password });
-          alert("Success");
+
+          this.$swal({
+            title: "Success",
+            text: "Login was successful. redirecting to Dashboard",
+            toast: true,
+            timer: 3000,
+            position: "top-end",
+            icon: "success",
+          });
+          this.$router.push("dashboard");
         } catch (error) {
-          alert("ERROR");
+          this.$swal({
+            title: "Oh no!",
+            text: "Login failed. Check your credentials",
+            icon: "error",
+          });
+          console.log(error);
         } finally {
           this.loading = false;
         }
